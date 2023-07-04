@@ -21,7 +21,7 @@ wget https://raw.githubusercontent.com/cathaloruaidh/CNV_Paper_Data/master/resou
 
 
 # Prerequisites
-In additiona to some basic *nix software, the following are required to run the supplied scripts:
+In addition to some basic *nix software, the following are required to run the supplied scripts:
 * `bcftools`
 * `bedtools`
 * `liftOver`
@@ -53,6 +53,7 @@ Download and extract the gold standard deletion calls for HG002 (saved to `resou
 ./01_resources.sh
 
 ```
+Additionally, a chain file from hg38/GRCh38 to hg19/GRCh37 is downloaded from the UCSC Genomics Institute website. 
 
 
 # Benchmarking
