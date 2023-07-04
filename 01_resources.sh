@@ -9,6 +9,8 @@
 ##################################################
 
 
+# output directory
+mkdir output
 
 
 # get the GRCh38 to GRCh37 chain file
