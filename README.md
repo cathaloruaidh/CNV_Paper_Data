@@ -4,6 +4,7 @@ We used two well known genomes (NA12878 and HG002) as evaluation samples to benc
 We have also included the output of a previously published pipeline on the same data for comparison (Khan et al., Schizophr Res, 2018 ; see [here](https://doi.org/10.1016/j.schres.2018.02.034)).
 The `resource` directory contains the gold standard CNV calls. 
 The `data` directory contains CNVs taken from the output of the three consensus CNV calling pipelines. 
+Finally, we also include the code used to benchmark the data and generate some of the images in our publication. 
 
 If you have any queries or feedback, please contact the [author](mailto:cathalormond@gmail.com). 
 If you use these data in your publication, please cite this repository (pending the publication of our manuscript). 
