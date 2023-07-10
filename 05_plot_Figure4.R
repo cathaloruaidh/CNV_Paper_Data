@@ -24,3 +24,7 @@ ggplot(DATA, aes(x=Evidence, y=Precision, fill=Evidence)) +
         axis.title.x = element_blank(), 
         axis.ticks.x = element_blank())
 dev.off()
+
+
+cat("\n\nDone! \n\n")
+

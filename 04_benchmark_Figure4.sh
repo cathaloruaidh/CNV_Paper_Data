@@ -112,4 +112,5 @@ done >> output/Singletons_Precision.txt
 
 
 
+echo -e "\n\nDone! \n\n"
 

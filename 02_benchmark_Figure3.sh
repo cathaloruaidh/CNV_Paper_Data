@@ -52,3 +52,7 @@ do
 
 	echo -e "HG002\t${PL}\t${RECALL}\t${PREC}"
 done >> output/Benchmarking_results.txt
+
+
+
+echo -e "\n\nDone! \n\n"

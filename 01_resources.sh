@@ -32,4 +32,4 @@ bcftools query -i 'FILTER="PASS" && SVTYPE="DEL" && (REPTYPE="SIMPLEDEL" || REPT
 	> resource/HG002_SVs_Tier1_v0.6.DEL.bed
 
 
-
+echo -e "\n\nDone! \n\n"

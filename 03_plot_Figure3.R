@@ -23,3 +23,6 @@ DATA %>%
   theme(text = element_text(size=25), 
         plot.title = element_text(size=25, hjust = 0.5))
 dev.off()  
+
+
+cat("\n\nDone! \n\n")
