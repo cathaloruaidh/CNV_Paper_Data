@@ -1,6 +1,6 @@
 # CNV Paper Data
 This repository contains the data generated as part of our consensus CNV calling pipeline for WGS data. 
-We used two well known genomes (NA12878 and HG002) as evaluation samples to benchmark our calling pipeline per individual and also including trio information. 
+We used two well-known reference trios (a subset of the CEPH 1463 pedigree (proband NA12878) and the GIAB Ashkenazim trio (proband HG002)) to benchmark the performance our calling pipeline per proband both individually and when also including trio information. 
 We have also included the output of a previously published pipeline on the same data for comparison (Khan et al., Schizophr Res, 2018 ; see [here](https://doi.org/10.1016/j.schres.2018.02.034)).
 The `resource` directory contains the gold standard CNV calls. 
 The `data` directory contains CNVs taken from the output of the three consensus CNV calling pipelines. 
@@ -14,7 +14,7 @@ If you use these data in your publication, please cite this repository (pending 
 As part of our work, we have curated a list of gold standard deletion calls for NA12878 taken from five publicly available resources. 
 These data had been generated from various data types, including SNP data, aCGH data, and NGS data. 
 We retained deletions that were present in at least two of the resources. 
-The BED file for these can be downloadde directly here: 
+The BED file for these can be downloaded directly here: 
 ```
 wget https://raw.githubusercontent.com/cathaloruaidh/CNV_Paper_Data/master/resource/2023.5.11_NA12878_GS_STRICT_super_clean_DELs.uniq_no_Mills_chrX.bed
 
@@ -22,7 +22,7 @@ wget https://raw.githubusercontent.com/cathaloruaidh/CNV_Paper_Data/master/resou
 
 
 # Prerequisites
-In addition to some basic *nix software, the following are required to run the supplied scripts:
+In addition to some basic software standard to Unix-like systems, the following are required to run the supplied scripts:
 * `bcftools`
 * `bedtools`
 * `liftOver`
