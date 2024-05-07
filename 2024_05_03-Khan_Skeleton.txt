@@ -1,0 +1,254 @@
+#! /bin/bash
+
+SAMPLE=${1}
+BAM=${2}
+CNMOPS=${3}
+
+
+DELLY_PATH="/path/to/delly"
+REF_FASTA="/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+
+
+### CN.MOPS
+tr -d '"' < ${CNMOPS} | \
+	tr ',' '\t' | \
+	cut -f2,3,4,7,10 | \
+	awk -v SAMPLE=${SAMPLE} -v OFS="\t" 'BEGIN{ c=1 } ; {if($4 == SAMPLE && ($5 ~ /CN0/ || $5 ~ /CN1/)) { print $1,$2,$3, SAMPLE "_cn.mops_DEL_" c ; c++ } }' | \
+	bedtools sort -i -  > \
+	${SAMPLE}.cn_mops.DEL.bed
+
+
+tr -d '"' < ${CNMOPS} | \
+	tr ',' '\t' | \
+	cut -f2,3,4,7,10 | \
+	awk -v SAMPLE=${SAMPLE} -v OFS="\t" 'BEGIN{ c=1 } ; {if( $4 == SAMPLE && !($5 ~ /CN0/ || $5 ~ /CN0/ || $5 ~ /CN2/)) { print $1,$2,$3, SAMPLE "_cn.mops_DUP_" c ; c++ } }' | \
+	bedtools sort -i -  > \
+	${SAMPLE}.cn_mops.DUP.bed
+
+
+
+
+
+### CNVNATOR (already called by PECAN)
+bcftools query -f "%CHROM\t%POS\t%END\t%ID\t%SVTYPE\n" ${SAMPLE}/results/CNVNATOR/${SAMPLE}.cnvnator.vcf.gz | \
+	awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($5 ~ /DEL/){ print $1,$2,$3, SAMPLE "_cnvnator_DEL_" c ; c++ } }' | \
+	bedtools sort -i - > \
+	${SAMPLE}.cnvnator.DEL.bed 
+
+
+bcftools query -f "%CHROM\t%POS\t%END\t%ID\t%SVTYPE\n" ${SAMPLE}/results/CNVNATOR/${SAMPLE}.cnvnator.vcf.gz | \
+	awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($5 ~ /DUP/){ print $1,$2,$3, SAMPLE "_cnvnator_DUP_" c ; c++ } }' | \
+	bedtools sort -i - > \
+	${SAMPLE}.cnvnator.DUP.bed 
+
+
+
+
+
+### DELLY
+# Make calls 
+${DELLY_PATH}/delly_v0.8.1 call -x ${DELLY_PATH}/excludeTemplates/human.hg38.excl.tsv -o ${SAMPLE}.DELLY.bcf -g ${REF_FASTA} ${BAM}
+
+
+# Convert BCF to VCF
+bcftools view ${SAMPLE}.DELLY.bcf > ${SAMPLE}.DELLY.vcf 
+
+
+# compress and index
+bgzip ${SAMPLE}.DELLY.vcf 
+tabix ${SAMPLE}.DELLY.vcf.gz 
+
+
+# Extract information from VCF file
+cat <(echo -e "#CHROM\tPOS\tEND\tSVTYPE\tFILTER\tPE\tMAPQ\tSR\tCHR2") <(bcftools query -f '%CHROM\t%POS\t%END\t%SVTYPE\t%FILTER\t%PE\t%MAPQ\t%SR\t%CHR2\n' ${SAMPLE}.DELLY.vcf.gz ) > ${SAMPLE}.DELLY.txt 
+
+
+# Convert to BED with specific filters
+awk -v OFS="\t" '{if($6 >= 3 && $7 >= 20) print $1,$2,$3, "DELLY_" $4 "_" $5 "_" $9}' ${SAMPLE}.DELLY.txt | \
+	tail -n+2 > \
+	${SAMPLE}.delly.bed 
+
+
+# get deletions
+awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($4 ~ /_DEL_/){ print $1,$2,$3, SAMPLE "_delly_DEL_" c ; c++ } }' ${SAMPLE}.delly.bed | \
+	bedtools sort -i - > \
+	${SAMPLE}.delly.DEL.bed 
+
+
+awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($4 ~ /_DUP_/){ print $1,$2,$3, SAMPLE "_delly_DUP_" c ; c++ } }' ${SAMPLE}.delly.bed | \
+	bedtools sort -i - > \
+	${SAMPLE}.delly.DUP.bed 
+
+
+
+
+
+
+### LUMPY
+# Extract from VCF (already called by PECAN)
+cat <(echo -e "#CHROM\tPOS\tEND\tSVTYPE\tSU\tPE\tSR\tBD\tEV\tGQ") <(bcftools query -f '%CHROM\t%POS\t%END\t%SVTYPE\t%SU\t%PE\t%SR\t%BD\t%EV\t[%GQ]\n' ${SAMPLE}/results/LUMPY/${SAMPLE}.lumpy.vcf.gz ) > ${SAMPLE}.lumpy.txt 
+
+
+# Convert to BED with specific filters
+awk -v OFS="\t" '{if($6 >= 4 && $10 > 20) print $1,$2,$3, "LUMPY_" $4}' ${SAMPLE}.lumpy.txt  | tail -n+2 > ${SAMPLE}.lumpy.bed 
+
+
+
+# get DEL
+awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($4 ~ /DEL/){ print $1,$2,$3, SAMPLE "_lumpy_DEL_" c ; c++ } }' ${SAMPLE}.lumpy.bed | \
+	bedtools sort -i - > \
+	${SAMPLE}.lumpy.DEL.bed 
+
+awk -v OFS="\t" -v SAMPLE=${SAMPLE} 'BEGIN{ c=1 } ; {if($4 ~ /DUP/){ print $1,$2,$3, SAMPLE "_lumpy_DUP_" c ; c++ } }' ${SAMPLE}.lumpy.bed | \
+	bedtools sort -i - > \
+	${SAMPLE}.lumpy.DUP.bed 
+
+
+ 
+
+
+
+# get repeat files
+awk -v OFS="\t" '{if($11 == "Satellite" && ($12 == "centr" || $12 == "telo")) print $5,$6,$7,$9,$11,$12}' rmsk.GRCh38.txt | \
+	bedtools sort -i - > \
+	satellite_centr_telo.GRCh38.bed
+
+grep -v ^# microsat.GRCh38.txt > microsat.GRCh38.bed
+
+grep -v ^# segdups.GRCh38.txt > segdups.GRCh38.bed
+
+awk -v OFS="\t" '{if($11 == "LINE" || $11 == "LTR" || $11 == "SINE" || $11 == "Retroposon") print $5,$6,$7,$9,$11}' rmsk.GRCh38.txt | \
+	bedtools sort -i - > \
+	transposable.GRCh38.bed
+
+awk -v OFS="\t" '{if($11 == "DNA" || $11 == "LINE" || $11 == "LTR" || $11 == "SINE" || $11 == "Retroposon") print $5,$6,$7,$9,$11}' rmsk.GRCh38.txt | \
+	bedtools sort -i - > \
+	transposable.incl_DNA.GRCh38.bed
+
+cat microsat.GRCh38.bed segdups.GRCh38.bed transposable.GRCh38.bed | \
+	cut -f1-3 | \
+	bedtools sort -i - | \
+	bedtools merge -i - > \
+	Khan_repeat.bed
+
+
+
+
+
+# Cat all samples and sort
+cat ${SAMPLE}.cn_mops.DEL.bed ${SAMPLE}.cnvnator.DEL.bed ${SAMPLE}.lumpy.DEL.bed ${SAMPLE}.delly.DEL.bed | \
+	sort-bed - > \
+	${SAMPLE}.all.DEL.bed 
+
+cat ${SAMPLE}.cn_mops.DUP.bed ${SAMPLE}.cnvnator.DUP.bed ${SAMPLE}.lumpy.DUP.bed ${SAMPLE}.delly.DUP.bed | \
+	sort-bed - > \
+	${SAMPLE}.all.DUP.bed 
+
+
+# remove satellite DNA
+for FILE in *all.DEL.bed *all.DUP.bed
+do 
+	echo ${FILE}
+	bedtools intersect -v -a ${FILE} -b satellite_centr_telo.GRCh38.bed -wa > ${FILE%bed}no_satellite.bed
+done
+
+
+# remove known repeat regions
+for FILE in *no_satellite.bed
+do 
+	echo ${FILE}
+	bedtools intersect -v -a ${FILE} -b Khan_repeat.bed -f 0.5 -r > ${FILE%bed}no_repeat.bed 
+done
+
+
+
+
+# Get the geno file
+
+while IFS="" read -r LINE  || [[ -n "${LINE}" ]]
+do 
+	NAME=$(echo ${LINE} | cut -f4 -d ' ' )
+	echo -en "${NAME}\t" 
+
+	for CALLER in cn_mops cnvnator delly lumpy
+	do 
+		COUNT=$( bedtools intersect -a <(echo ${LINE} | tr ' ' '\t' | cut -f1-4 ) -b ${SAMPLE}.${CALLER}.DEL.bed -f 0.5 -r -wao | awk '{if($5 != ".") print $4}' | sort | uniq | wc -l )
+
+		if [[ ${COUNT} > 0 && -n "${COUNT}" ]]
+		then 
+			echo -en "1\t"
+		else 
+			echo -en "0\t"
+		fi 
+	done 
+	echo
+done < ${SAMPLE}.all.DEL.no_satellite.no_repeat.bed > \
+	${SAMPLE}.all.DEL.no_satellite.no_repeat.geno.txt 
+
+
+while IFS="" read -r LINE  || [[ -n "${LINE}" ]]
+do 
+	NAME=$(echo ${LINE} | cut -f4 -d ' ' )
+	echo -en "${NAME}\t" 
+
+	for CALLER in cn_mops cnvnator delly lumpy
+	do 
+		COUNT=$( bedtools intersect -a <(echo ${LINE} | tr ' ' '\t' | cut -f1-4 ) -b ${SAMPLE}.${CALLER}.DUP.bed -f 0.5 -r -wao | awk '{if($5 != ".") print $4}' | sort | uniq | wc -l )
+
+		if [[ ${COUNT} > 0 && -n "${COUNT}" ]] 
+		then 
+			echo -en "1\t" 
+		else 
+			echo -en "0\t" 
+		fi 
+	done 
+	echo 
+done < ${SAMPLE}.all.DUP.no_satellite.no_repeat.bed > \
+	${SAMPLE}.all.DUP.no_satellite.no_repeat.geno.txt 
+
+
+
+
+
+# From geno file, get consensus BED
+for FILE in *geno.txt 
+do 
+	awk '{c=0;for(i=2;i<=NF;++i){c+=$i}; if (c > 1) print $1}' ${FILE} > ${FILE%geno.txt}consensus.txt 
+	grep -w -f ${FILE%geno.txt}consensus.txt ${FILE%geno.txt}bed > ${FILE%geno.txt}consensus.bed 
+	echo ${FILE} 
+done 
+
+
+# from geno file get singletons
+for FILE in *geno.txt 
+do 
+	awk '{c=0;for(i=2;i<=NF;++i){c+=$i}; if (c == 1) print $1}' ${FILE} > ${FILE%geno.txt}singleton.txt 
+	grep -w -f ${FILE%geno.txt}singleton.txt ${FILE%geno.txt}bed > ${FILE%geno.txt}singleton.bed 
+	echo ${FILE} 
+done 
+
+
+
+
+
+
+# check HG002 singletons with consensus calls in related samples
+rm *.keep.txt
+bedtools intersect -a HG002.all.DEL.no_satellite.no_repeat.singleton.bed -b HG003.all.DEL.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | awk '{if($5 != ".") print $4}' | sort | uniq > HG002.all.DEL.no_satellite.no_repeat.singleton.keep.txt
+bedtools intersect -a HG002.all.DEL.no_satellite.no_repeat.singleton.bed -b HG004.all.DEL.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | awk '{if($5 != ".") print $4}' | sort | uniq >> HG002.all.DEL.no_satellite.no_repeat.singleton.keep.txt
+
+
+bedtools intersect -a HG002.all.DUP.no_satellite.no_repeat.singleton.bed -b HG003.all.DUP.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | awk '{if($5 != ".") print $4}' | sort | uniq > HG002.all.DUP.no_satellite.no_repeat.singleton.keep.txt
+bedtools intersect -a HG002.all.DUP.no_satellite.no_repeat.singleton.bed -b HG004.all.DUP.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | awk '{if($5 != ".") print $4}' | sort | uniq >> HG002.all.DUP.no_satellite.no_repeat.singleton.keep.txt
+
+
+
+
+# get final HG002 set
+grep -w -f HG002.all.DEL.no_satellite.no_repeat.singleton.keep.txt HG002.all.DEL.no_satellite.no_repeat.singleton.bed | cat - HG002.all.DEL.no_satellite.no_repeat.consensus.bed | bedtools sort -i - > HG002.all.DEL.no_satellite.no_repeat.COMBINED.bed
+
+grep -w -f HG002.all.DUP.no_satellite.no_repeat.singleton.keep.txt HG002.all.DUP.no_satellite.no_repeat.singleton.bed | cat - HG002.all.DUP.no_satellite.no_repeat.consensus.bed | bedtools sort -i - > HG002.all.DUP.no_satellite.no_repeat.COMBINED.bed
+
+
+
+

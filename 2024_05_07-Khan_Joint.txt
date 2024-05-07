@@ -1,0 +1,55 @@
+#! /bin/bash
+
+
+CHILD=${1}
+FATHER=${2}
+MOTHER=${3}
+
+
+
+### check child singletons with consensus calls in parents
+# DEL
+
+bedtools intersect -a ${CHILD}.all.DEL.no_satellite.no_repeat.singleton.bed -b ${FATHER}.all.DEL.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | \
+	awk '{if($5 != ".") print $4}' | \
+	sort | \
+	uniq > \
+	${CHILD}.all.DEL.no_satellite.no_repeat.singleton.keep.txt
+
+bedtools intersect -a ${CHILD}.all.DEL.no_satellite.no_repeat.singleton.bed -b ${MOTHER}.all.DEL.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | \
+	awk '{if($5 != ".") print $4}' | \
+	sort | \
+	uniq >> \
+	${CHILD}.all.DEL.no_satellite.no_repeat.singleton.keep.txt
+
+
+# DUP
+bedtools intersect -a ${CHILD}.all.DUP.no_satellite.no_repeat.singleton.bed -b ${FATHER}.all.DUP.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | \
+	awk '{if($5 != ".") print $4}' | \
+	sort | \
+	uniq > \
+	${CHILD}.all.DUP.no_satellite.no_repeat.singleton.keep.txt
+
+bedtools intersect -a ${CHILD}.all.DUP.no_satellite.no_repeat.singleton.bed -b ${MOTHER}.all.DUP.no_satellite.no_repeat.consensus.bed -wao -f 0.5 -r | \
+	awk '{if($5 != ".") print $4}' | \
+	sort | \
+	uniq >> \
+	${CHILD}.all.DUP.no_satellite.no_repeat.singleton.keep.txt
+
+
+
+
+# get final child set
+grep -w -f ${CHILD}.all.DEL.no_satellite.no_repeat.singleton.keep.txt ${CHILD}.all.DEL.no_satellite.no_repeat.singleton.bed | \
+	cat - ${CHILD}.all.DEL.no_satellite.no_repeat.consensus.bed | \
+	bedtools sort -i - > \
+	${CHILD}.all.DEL.no_satellite.no_repeat.COMBINED.bed
+
+grep -w -f ${CHILD}.all.DUP.no_satellite.no_repeat.singleton.keep.txt ${CHILD}.all.DUP.no_satellite.no_repeat.singleton.bed | \
+	cat - ${CHILD}.all.DUP.no_satellite.no_repeat.consensus.bed | \
+	bedtools sort -i - > \
+	${CHILD}.all.DUP.no_satellite.no_repeat.COMBINED.bed
+
+
+
+
