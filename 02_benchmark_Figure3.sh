@@ -37,6 +37,7 @@ do
 
 	# CNVs of length <=1kbp
 	GS="resource/2023.5.11_NA12878_GS_STRICT_super_clean_DELs.uniq_no_Mills_chrX.lift_GRCh38.le1kbp.bed"
+	awk '$3-$2 <= 1000' ${FILE} > ${FILE%bed}le1kbp.bed
 
 	COUNT=$( bedtools intersect -a ${GS} -b ${FILE%bed}le1kbp.bed -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
 	RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
@@ -50,6 +51,7 @@ do
 
 	# CNVs of length >1kbp
 	GS="resource/2023.5.11_NA12878_GS_STRICT_super_clean_DELs.uniq_no_Mills_chrX.lift_GRCh38.gt1kbp.bed"
+	awk '$3-$2 > 1000' ${FILE} > ${FILE%bed}gt1kbp.bed
 
 	COUNT=$( bedtools intersect -a ${GS} -b ${FILE%bed}gt1kbp.bed -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
 	RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
@@ -85,6 +87,7 @@ do
 
 		# CNVs of length <=1kbp
 		GS="resource/HG002_SVs_Tier1_v0.6.${CNV}.lift_GRCh38.le1kbp.bed"
+		awk '$3-$2 <= 1000' ${FILE} > ${FILE%bed}le1kbp.bed
 
 		COUNT=$( bedtools intersect -a ${GS} -b ${FILE%bed}le1kbp.bed -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
 		RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
@@ -98,6 +101,7 @@ do
 
 		# CNVs of length >1kbp
 		GS="resource/HG002_SVs_Tier1_v0.6.${CNV}.lift_GRCh38.gt1kbp.bed"
+		awk '$3-$2 > 1000' ${FILE} > ${FILE%bed}gt1kbp.bed
 
 		COUNT=$( bedtools intersect -a ${GS} -b ${FILE%bed}gt1kbp.bed -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
 		RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
