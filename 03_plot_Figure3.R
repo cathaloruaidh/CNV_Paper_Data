@@ -44,9 +44,9 @@ DATA %>%
   ggplot(aes(x=Recall, y=Precision, fill = Pipeline_f)) + 
   geom_point(size = 7, alpha=0.9, shape=21) + 
   scale_fill_manual(values = c(BR_col[3], BR_col[2], BR_col[1])) + 
-  xlim(c(0.0, 1.0)) + 
+  xlim(c(0.0, 0.6)) + 
   labs(fill = "Pipeline") + 
-  ylim(c(0.0, 1.0)) + 
+  ylim(c(0.0, 0.6)) + 
   coord_fixed(ratio = 1) +
   facet_grid(Length_f~.) + 
   theme(text = element_text(size=25), 
