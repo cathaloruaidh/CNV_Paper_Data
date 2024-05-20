@@ -15,6 +15,7 @@ DATA$Sample_f <- factor(DATA$Sample, levels = c("NA12878", "HG002"))
 
 png("Figure_3.png", width = 16, height = 9, units = "in", res=350)
 DATA %>%
+  subset(Length_f != "All") %>% 
   ggplot(aes(x=Recall, y=Precision, fill = Pipeline_f)) + 
   geom_point(size = 7, alpha=0.9, shape=21) + 
   scale_fill_manual(values = c(BR_col[3], BR_col[2], BR_col[1])) + 
@@ -39,6 +40,7 @@ DATA$Length_f <- factor(DATA$Length, levels = c("All", "<=1kbp", ">1kbp"))
 
 png("Figure_SN.png", width = 16, height = 9, units = "in", res=350)
 DATA %>%
+  subset(Length_f != "All") %>%
   ggplot(aes(x=Recall, y=Precision, fill = Pipeline_f)) + 
   geom_point(size = 7, alpha=0.9, shape=21) + 
   scale_fill_manual(values = c(BR_col[3], BR_col[2], BR_col[1])) + 
@@ -46,7 +48,7 @@ DATA %>%
   labs(fill = "Pipeline") + 
   ylim(c(0.0, 1.0)) + 
   coord_fixed(ratio = 1) +
-  facet_grid(.~Length_f) + 
+  facet_grid(Length_f~.) + 
   theme(text = element_text(size=25), 
         plot.title = element_text(size=25, hjust = 0.5))
 dev.off()  
