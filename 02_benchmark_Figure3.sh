@@ -13,8 +13,8 @@
 
 
 # header line
-echo -e "Sample\tPipeline\tRecall\tPrecision" > output/Benchmarking_results.DEL.txt
-echo -e "Sample\tPipeline\tRecall\tPrecision" > output/Benchmarking_results.DUP.txt
+echo -e "Sample\tPipeline\tLength\tRecall\tPrecision" > output/Benchmarking_results.DEL.txt
+echo -e "Sample\tPipeline\tLength\tRecall\tPrecision" > output/Benchmarking_results.DUP.txt
 
 
 
@@ -43,7 +43,7 @@ do
 	RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
 
 	COUNT=$( bedtools intersect -a ${FILE%bed}le1kbp.bed -b ${GS} -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
-	PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE} )" | bc )
+	PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE%bed}le1kbp.bed )" | bc )
 
 	echo -e "NA12878\t${PL}\t<=1kbp\t${RECALL}\t${PREC}"
 
@@ -57,7 +57,7 @@ do
 	RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
 
 	COUNT=$( bedtools intersect -a ${FILE%bed}gt1kbp.bed -b ${GS} -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
-	PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE} )" | bc )
+	PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE%bed}gt1kbp.bed )" | bc )
 
 	echo -e "NA12878\t${PL}\t>1kbp\t${RECALL}\t${PREC}"
 done >> output/Benchmarking_results.DEL.txt
@@ -93,7 +93,7 @@ do
 		RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
 
 		COUNT=$( bedtools intersect -a ${FILE%bed}le1kbp.bed -b ${GS} -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
-		PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE} )" | bc )
+		PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE%bed}le1kbp.bed )" | bc )
 
 		echo -e "HG002\t${PL}\t<=1kbp\t${RECALL}\t${PREC}"
 
@@ -107,7 +107,7 @@ do
 		RECALL=$( echo "scale=6;${COUNT}/$( wc -l < ${GS} )" | bc )
 
 		COUNT=$( bedtools intersect -a ${FILE%bed}gt1kbp.bed -b ${GS} -f 0.5 -r -wa | bedtools sort -i - | uniq | wc -l )
-		PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE} )" | bc )
+		PREC=$( echo "scale=6;${COUNT}/$( wc -l < ${FILE%bed}gt1kbp.bed )" | bc )
 
 		echo -e "HG002\t${PL}\t>1kbp\t${RECALL}\t${PREC}"
 
