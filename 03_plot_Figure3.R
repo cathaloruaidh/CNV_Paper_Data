@@ -32,7 +32,7 @@ dev.off()
 
 
 # Duplication calls
-DATA <- read.table("output/Benchmarking_results.DEL.txt", header = T, sep='\t')
+DATA <- read.table("output/Benchmarking_results.DUP.txt", header = T, sep='\t')
 
 DATA$Pipeline_f <- factor(DATA$Pipeline, levels = c("TRIO", "INDIVIDUAL", "KHAN"))
 DATA$Length_f <- factor(DATA$Length, levels = c("All", "<=1kbp", ">1kbp"))
