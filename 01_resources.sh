@@ -34,7 +34,7 @@ bcftools query -i 'FILTER="PASS" && SVTYPE="DEL" && (REPTYPE="SIMPLEDEL" || REPT
 
 # extract benchmark duplications
 bcftools query -i 'FILTER="PASS" && SVTYPE="INS" && REPTYPE="DUP" && TRall="FALSE"' -f 'chr%CHROM\t%POS\t%SVLEN\n' resource/HG002_SVs_Tier1_v0.6.vcf.gz \
-	| awk -v OFS="\t" '{ print $1, $2, $2 - $3, "HG002_Tier1_DUP_" NR} ' \
+	| awk -v OFS="\t" '{ print $1, $2, $2 + $3, "HG002_Tier1_DUP_" NR} ' \
 	| bedtools sort -i - \
 	> resource/HG002_SVs_Tier1_v0.6.DUP.bed
 
