@@ -9,6 +9,7 @@ BR_col <- c("#94221F", "#3A69AE", "#628D56", "#C195C4", "#F2B342")
 DATA <- read.table("output/Benchmarking_results.DEL.txt", header = T, sep='\t')
 
 DATA$Pipeline_f <- factor(DATA$Pipeline, levels = c("TRIO", "INDIVIDUAL", "KHAN"))
+DATA$Length_f <- factor(DATA$Length, levels = c("All", "<=1kbp", ">1kbp"))
 DATA$Sample_f <- factor(DATA$Sample, levels = c("NA12878", "HG002"))
 
 
@@ -21,7 +22,7 @@ DATA %>%
   labs(fill = "Pipeline") + 
   ylim(c(0.0, 1.0)) + 
   coord_fixed(ratio = 1) +
-  facet_grid(~Sample_f) + 
+  facet_grid(Length_f~Sample_f) + 
   theme(text = element_text(size=25), 
         plot.title = element_text(size=25, hjust = 0.5))
 dev.off()  
@@ -33,6 +34,7 @@ dev.off()
 DATA <- read.table("output/Benchmarking_results.DEL.txt", header = T, sep='\t')
 
 DATA$Pipeline_f <- factor(DATA$Pipeline, levels = c("TRIO", "INDIVIDUAL", "KHAN"))
+DATA$Length_f <- factor(DATA$Length, levels = c("All", "<=1kbp", ">1kbp"))
 
 
 png("Figure_SN.png", width = 16, height = 9, units = "in", res=350)
@@ -44,7 +46,7 @@ DATA %>%
   labs(fill = "Pipeline") + 
   ylim(c(0.0, 1.0)) + 
   coord_fixed(ratio = 1) +
-  facet_grid(~Sample_f) + 
+  facet_grid(.~Length_f) + 
   theme(text = element_text(size=25), 
         plot.title = element_text(size=25, hjust = 0.5))
 dev.off()  
