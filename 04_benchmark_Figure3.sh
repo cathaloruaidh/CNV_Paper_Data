@@ -2,7 +2,7 @@
 
 
 ##################################################
-# 04_benchmark_Figure4.sh
+# 04_benchmark_Figure3.sh
 # 
 # Extract all deletions from the trio data (split
 # by the level of evidence supporting each call)
@@ -39,20 +39,11 @@ awk '$5 == "S"' output/CEPH1463.TRIO.NA12878.DEL.bed > output/CEPH1463.TRIO.NA12
 
 
 
-# convert to hg19
-for FILE in output/CEPH1463.TRIO.NA12878.DEL.*.bed
-do 
-	echo ${FILE}
-	liftOver ${FILE} resource/hg38ToHg19.over.chain.gz ${FILE%bed}lift_hg19.bed ${FILE%bed}reject_hg19.bed
-	echo
-done 
-
-
 
 # benchmark high-confidence (i.e. no singleton) calls
-for FILE in output/CEPH1463.TRIO.NA12878.DEL.*.lift_hg19.bed
+for FILE in output/CEPH1463.TRIO.NA12878.DEL.*.bed
 do
-	GS="resource/2023.5.11_NA12878_GS_STRICT_super_clean_DELs.uniq_no_Mills_chrX.bed"
+	GS="resource/2023.5.11_NA12878_GS_STRICT_super_clean_DELs.uniq_no_Mills_chrX.lift_GRCh38.bed"
 
 	EV=$( echo ${FILE} | cut -f5 -d'.' )
 
